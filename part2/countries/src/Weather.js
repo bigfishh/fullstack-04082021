@@ -9,18 +9,28 @@ function Weather({ capital }) {
         axios
             .get(`http://api.weatherstack.com/current?access_key=${process.env.REACT_APP_API_KEY}&query=${capital}`)
             .then(response => {
-                setWeather(response.data.current)
+                if (response.data.current) {
+                    setWeather(response.data.current)
+                }
             })
     }, [capital])
 
-    console.log(weather)
+    function renderWeather() {
+        if (weather) {
+            return(
+                <>
+                    <h3>weather in {capital}</h3>
+                    <p><strong>temperature: </strong>{weather.temperature} celsius</p>
+                    <img src={weather.weather_icons} alt={capital}/>
+                    <p><strong>wind: </strong>{weather.wind_speed} mph direction {weather.wind_dir}</p>
+                </>
+            )
+        }
+    }
 
     return(
         <>
-            <h3>weather in {capital}</h3>
-            <p><strong>temperature: </strong>{weather.temperature} celsius</p>
-            <img src={weather.weather_icons} alt={capital}/>
-            <p><strong>wind: </strong>{weather.wind_speed} mph direction {weather.wind_dir}</p>
+            {renderWeather()}
         </>
     )
 

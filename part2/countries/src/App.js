@@ -23,7 +23,7 @@ function App() {
     let foundCountries = countries.filter(({name}) => name.toLowerCase().includes(searchTerm.toLowerCase()))
     
     if (foundCountries.length > 10) {
-      return "too many matches, specify another filter"
+      return <p>too many matches, specify another filter</p>
     } else if (foundCountries.length === 1) {
       return <CountryDetail country={foundCountries[0]}/>
     } else {

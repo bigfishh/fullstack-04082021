@@ -11,7 +11,7 @@ function CountryDetail({ country }) {
     }
 
     return(
-        <div>
+        <>
             <h1>{name}</h1>
             <p>capital: {capital}</p>
             <p>population: {population}</p>
@@ -19,7 +19,7 @@ function CountryDetail({ country }) {
             <ul>{displayLanguages()}</ul>
             <img src={flag} alt={name} style={{width: '300px'}}/>
             <Weather capital={capital} />
-        </div>
+        </>
     )
 }
 

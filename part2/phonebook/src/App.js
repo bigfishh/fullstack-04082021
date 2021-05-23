@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Form from './components/Form'
-import Persons from './components/Persons'
+import PersonsList from './components/PersonsList'
 import Filter from './components/Filter'
-import axios from 'axios'
-
-
+import personServices from './services/persons'
 
 function App() {
 
@@ -16,8 +14,8 @@ function App() {
   const [searchVal, setSearchVal] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:30001/persons')
+    personServices
+      .getAll()
       .then(response => {
         setPersons(response.data)
       })
@@ -25,19 +23,51 @@ function App() {
 
   function handleSubmit(e) {
     e.preventDefault()
-    const matchingName = persons.find(({name}) => name.toLowerCase() === newName.toLowerCase())
-    const matchingNumber = persons.find(({number}) => number === newNumber)
+    const matchingNamePerson = persons.find(({name}) => name.toLowerCase() === newName.toLowerCase())
+    const matchingNumberPerson = persons.find(({number}) => number === newNumber)
 
-    if (matchingName || matchingNumber) {
-      window.alert(`${newName} or ${newNumber} is already added to phonebook`)
-      return 
-    }
-
-    axios
-      .post('http://localhost:30001/persons',  {name: newName, number: newNumber})
+    if (matchingNamePerson && !matchingNumberPerson) {
+      if(window.confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)) {
+        personServices
+          .update(matchingNamePerson.id, {...matchingNamePerson, number: newNumber})
+          .then(response => {
+            let updatedPersons = () => {
+              return persons.map((person) => {
+                if (person.id === response.data.id) {
+                  return {...person, number: response.data.number}
+                }
+                return person
+              })
+            }
+            setPersons(updatedPersons)
+          })
+      }
+    } else if (!matchingNamePerson && matchingNumberPerson) {
+      if(window.confirm(`update contact name for ${matchingNumberPerson.name} with the number ${matchingNumberPerson.number}?`)) {
+        personServices
+          .update(matchingNumberPerson.id, {...matchingNumberPerson, name: newName})
+          .then(response => {
+            let updatedPersons = () => {
+              return persons.map((person) => {
+                if (person.id === response.data.id) {
+                  return {...person, name: response.data.name}
+                }
+                return person
+              })
+            }
+            setPersons(updatedPersons)
+          })
+      }
+    } else if (matchingNamePerson.id === matchingNumberPerson.id) {
+      window.alert(`${newName} and ${newNumber} is already added to phonebook`)
+    } else {
+      personServices
+      .create({name: newName, number: newNumber})
       .then(response => {
         setPersons(persons => [...persons, response.data])
       })
+    }
+
   }
 
   function filterPersons() {
@@ -46,12 +76,23 @@ function App() {
     })
   }
 
+  function removeContact(contact_id, name) {
+    personServices
+      .remove(contact_id)
+      .then(response => {
+        setPersons(persons.filter(({id}) => id !== contact_id))
+      })
+      .catch((error) => {
+        alert(`${name} has already been removed from your contacts`)
+      })
+  }
+
   return (
     <div className="App">
       <h2>Phonebook</h2>
       <Filter searchVal={searchVal} setSearchVal={setSearchVal} />
       <Form setNewName={setNewName} setNewNumber={setNewNumber} handleSubmit={handleSubmit} />
-      <Persons persons={filterPersons()} />
+      <PersonsList persons={filterPersons()} removeContact={removeContact}/>
     </div>
   );
 }

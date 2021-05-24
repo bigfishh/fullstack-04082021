@@ -1,10 +1,10 @@
 import Note from './Note'
 
-function NotesContainer({ notes, changeNoteImportance, removeNoteFromState }) {
+function NotesContainer({ notes, changeNoteImportance, removeNoteFromState, setErrorMessage }) {
 
     function renderNotes() {
         return notes.map((note) => {
-            return <Note key={note.id} note={note} changeNoteImportance={changeNoteImportance} removeNoteFromState={removeNoteFromState}/>
+            return <Note key={note.id} note={note} changeNoteImportance={changeNoteImportance} removeNoteFromState={removeNoteFromState} setErrorMessage={setErrorMessage}/>
         })
     }
 

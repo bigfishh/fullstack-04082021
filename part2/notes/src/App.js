@@ -2,13 +2,15 @@ import './App.css';
 import {useState, useEffect} from 'react';
 import NotesContainer from './NotesContainer';
 import NotesForm from './NotesForm';
-import noteServices from './services/notes'
+import Notification from './Notification';
+import noteServices from './services/notes';
 
 function App() {
 
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     noteServices
@@ -43,8 +45,10 @@ function App() {
 
   return (
     <div className="App">
+      <h1>Notes</h1>
+      <Notification message={errorMessage} />
       <button onClick={() => {setShowAll(!showAll)}}>{showAll ? "important": "all"}</button>
-      <NotesContainer notes={filterNotes()} changeNoteImportance={changeNoteImportance} removeNoteFromState={removeNoteFromState}/>
+      <NotesContainer notes={filterNotes()} changeNoteImportance={changeNoteImportance} setErrorMessage={setErrorMessage} removeNoteFromState={removeNoteFromState}/>
       <NotesForm newNote={newNote} setNewNote={setNewNote} addNewNote={addNewNote}/>
     </div>
   );

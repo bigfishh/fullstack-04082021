@@ -1,4 +1,4 @@
-import noteServices from './services/notes';
+import noteServices from '../services/notes';
 
 function NotesForm({newNote, setNewNote, addNewNote}) {
 

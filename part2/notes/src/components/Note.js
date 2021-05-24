@@ -1,6 +1,6 @@
-import noteServices from './services/notes';
+import noteServices from '../services/notes';
 
-function Note({ note, changeNoteImportance, removeNoteFromState }) {
+function Note({ note, changeNoteImportance, removeNoteFromState, setErrorMessage }) {
 
     const label = note.important ? 'make not important' : 'make important'
 
@@ -19,12 +19,17 @@ function Note({ note, changeNoteImportance, removeNoteFromState }) {
                 removeNoteFromState(note.id)
             })
             .catch((error) => {
-                alert(`the note '${note.content}' was already deleted from server`)
+                setErrorMessage(
+                    `Note '${note.content}' was already removed from server`
+                )
+                setTimeout(() => {
+                    setErrorMessage(null)
+                }, 5000)
             })
     }
 
     return(
-        <li>
+        <li className="note">
             <p>
                 <button onClick={removeNote}>x</button>
                 {note.content} 

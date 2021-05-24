@@ -4,6 +4,7 @@ import Form from './components/Form'
 import PersonsList from './components/PersonsList'
 import Filter from './components/Filter'
 import personServices from './services/persons'
+import Notification from './components/Notification'
 
 function App() {
 
@@ -12,6 +13,8 @@ function App() {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchVal, setSearchVal] = useState('')
+  const [message, setMessage] = useState(null)
+  const [messageType, setMessageType] = useState(null)
 
   useEffect(() => {
     personServices
@@ -39,6 +42,7 @@ function App() {
                 return person
               })
             }
+            setMessage(`Updated ${response.data.name}`)
             setPersons(updatedPersons)
           })
       }
@@ -55,16 +59,26 @@ function App() {
                 return person
               })
             }
+            setMessage(`Updated ${response.data.name}`)
+            setMessageType('success')
             setPersons(updatedPersons)
           })
       }
-    } else if (matchingNamePerson.id === matchingNumberPerson.id) {
+    } else if ((matchingNamePerson && matchingNumberPerson) && (matchingNamePerson === matchingNumberPerson)) {
       window.alert(`${newName} and ${newNumber} is already added to phonebook`)
     } else {
       personServices
       .create({name: newName, number: newNumber})
       .then(response => {
+        setMessage(`Added ${response.data.name}`)
+        setMessageType('success')
         setPersons(persons => [...persons, response.data])
+        setNewName('')
+        setNewNumber('')
+        setTimeout(() => {
+          setMessage(null)
+          setMessageType(null)
+      }, 5000)
       })
     }
 
@@ -80,16 +94,20 @@ function App() {
     personServices
       .remove(contact_id)
       .then(response => {
+        setMessage(`${name} has been successfully removed from the server`)
+        setMessageType('success')
         setPersons(persons.filter(({id}) => id !== contact_id))
       })
       .catch((error) => {
-        alert(`${name} has already been removed from your contacts`)
+        setMessage(`${name} has already been removed from the server`)
+        setMessageType('error')
       })
   }
 
   return (
     <div className="App">
       <h2>Phonebook</h2>
+      <Notification message={message} messageType={messageType}/>
       <Filter searchVal={searchVal} setSearchVal={setSearchVal} />
       <Form setNewName={setNewName} setNewNumber={setNewNumber} handleSubmit={handleSubmit} />
       <PersonsList persons={filterPersons()} removeContact={removeContact}/>

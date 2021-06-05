@@ -1,7 +1,20 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
+const requestLogger = (request, response, next) => {
+	console.log('Method:', request.method)
+	console.log('Path: ', request.path)
+	console.log('Body: ', request.body)
+	console.log('---')
+	next()
+}
+
+morgan.token('reqBody', function (req, res) { return JSON.stringify(req.body)})
+
 app.use(express.json())
+app.use(requestLogger)
+app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :reqBody`))
 
 let phonebook = [
     {
@@ -55,7 +68,6 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-    console.log(request.body)
     const body = request.body 
     const foundName = phonebook.find(({name}) => name === body.name)
 

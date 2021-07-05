@@ -1,8 +1,23 @@
-function BlogForm({ handleBlogSubmit, title, setTitle, author, setAuthor, url, setUrl }) {
+import { useState } from 'react'
+
+function BlogForm({ handleBlogSubmit }) {
+
+    const [title, setTitle] = useState('')
+    const [author, setAuthor] = useState('')
+    const [url, setUrl] = useState('')
+
+    function handleSubmit(e) {
+        e.preventDefault()
+        handleBlogSubmit({title, author, url})
+        setTitle('')
+        setAuthor('')
+        setUrl('')
+    }
+
     return(
         <>
             <h2>create new</h2>
-            <form onSubmit={handleBlogSubmit} >
+            <form onSubmit={handleSubmit} >
                 <div>
                     title:
                     <input 

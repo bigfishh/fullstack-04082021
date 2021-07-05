@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [message, setMessage] = useState(null)
   const [messageType, setMessageType] = useState('')
 
@@ -33,8 +29,7 @@ const App = () => {
     }
   }, [])
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
+  const handleLogin = async (username, password) => {
     try {
       console.log(`logging in ${username} ${password}`)
       let loggedInUser = await loginService.login({
@@ -46,8 +41,6 @@ const App = () => {
       ) 
       setUser(loggedInUser)
       blogService.setToken(loggedInUser.token)
-      setUsername('')
-      setPassword('')
     } catch(exception) {
       setMessage('wrong username or password')
       setMessageType('error')
@@ -58,14 +51,41 @@ const App = () => {
     }
   }
 
-  function renderBlogs() {
-    return blogs.map(blog =>
-      <Blog key={blog.id} blog={blog} />)
+  async function updateLikes(blogId, blogLikes) {
+    const updatedBlog = await blogService.updateBlog(blogId, blogLikes)
+    console.log('updatedBlog', updatedBlog)
+    if (updatedBlog.likes) {
+      const updateBlogList = blogs.map((blog) => {
+        if (blog.id === blogId) {
+          return updatedBlog
+        } 
+        return blog 
+      })
+
+      setBlogs(updateBlogList)
+    }
   }
 
-  async function handleBlogSubmit(e) {
-    e.preventDefault()
-      const blog = await blogService.createNew({title, author, url})
+  async function deleteBlog(blogId) {
+    const deleteResponse = await blogService.removeBlog(blogId)
+    if (!deleteResponse) {
+      const updatedBlogs = blogs.filter(blog => blog.id !== blogId)
+      setBlogs(updatedBlogs)
+    } else {
+      
+    }
+  }
+
+  function renderBlogs() {
+    const sortedByLikes = blogs.sort((a,b) => b.likes - a.likes)
+
+    return sortedByLikes.map(blog =>
+      <Blog key={blog.id} blog={blog} updateLikes={updateLikes} deleteBlog={deleteBlog}/>)
+  }
+
+  async function handleBlogSubmit(blogObj) {
+      blogFormRef.current.toggleVisibility()
+      const blog = await blogService.createNew(blogObj)
       if (blog.error === 'token expired') {
         setMessage(`${blog.error}: please log in again`)
         setMessageType('error')
@@ -87,6 +107,8 @@ const App = () => {
     setUser(null)
   }
 
+  const blogFormRef = useRef()
+
   return (
     <div>
       <h2>blogs</h2>
@@ -95,11 +117,15 @@ const App = () => {
       ? <div>
           {user.username} logged in! 
           <button onClick={handleLogout} >Logout</button>
-          <BlogForm handleBlogSubmit={handleBlogSubmit} title={title} setTitle={setTitle} author={author} setAuthor={setAuthor} url={url} setUrl={setUrl} />
+          <Togglable toggleType='create new blog' ref={blogFormRef}>
+            <BlogForm handleBlogSubmit={handleBlogSubmit} />
+          </Togglable>
           <hr/>
           {renderBlogs()}
         </div> 
-      : <LoginForm handleLogin={handleLogin} username={username} password={password} setPassword={setPassword} setUsername={setUsername} />}
+      : <Togglable toggleType='login'>
+          <LoginForm handleLogin={handleLogin} />
+        </Togglable>}
     </div>
   )
 }

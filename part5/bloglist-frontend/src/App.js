@@ -15,9 +15,9 @@ const App = () => {
 
   useEffect(() => {
     blogService.getAll().then(blogs => {
-      console.log("BLOGS", blogs)
+      console.log('BLOGS', blogs)
       setBlogs( blogs )
-    })  
+    })
   }, [user])
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const App = () => {
       })
       window.localStorage.setItem(
         'loggedNoteappUser', JSON.stringify(loggedInUser)
-      ) 
+      )
       setUser(loggedInUser)
       blogService.setToken(loggedInUser.token)
     } catch(exception) {
@@ -58,8 +58,8 @@ const App = () => {
       const updateBlogList = blogs.map((blog) => {
         if (blog.id === blogId) {
           return updatedBlog
-        } 
-        return blog 
+        }
+        return blog
       })
 
       setBlogs(updateBlogList)
@@ -71,8 +71,6 @@ const App = () => {
     if (!deleteResponse) {
       const updatedBlogs = blogs.filter(blog => blog.id !== blogId)
       setBlogs(updatedBlogs)
-    } else {
-      
     }
   }
 
@@ -84,22 +82,22 @@ const App = () => {
   }
 
   async function handleBlogSubmit(blogObj) {
-      blogFormRef.current.toggleVisibility()
-      const blog = await blogService.createNew(blogObj)
-      if (blog.error === 'token expired') {
-        setMessage(`${blog.error}: please log in again`)
-        setMessageType('error')
-        setUser(null)
-        window.localStorage.clear()
-      } else {
-        setMessage(`a new blog ${blog.title} by ${blog.author} added`)
-        setMessageType('success')
-        setBlogs([...blogs, blog])
-      }
-      setTimeout(() => {
-        setMessage(null)
-        setMessageType('')
-      }, 5000)
+    blogFormRef.current.toggleVisibility()
+    const blog = await blogService.createNew(blogObj)
+    if (blog.error === 'token expired') {
+      setMessage(`${blog.error}: please log in again`)
+      setMessageType('error')
+      setUser(null)
+      window.localStorage.clear()
+    } else {
+      setMessage(`a new blog ${blog.title} by ${blog.author} added`)
+      setMessageType('success')
+      setBlogs([...blogs, blog])
+    }
+    setTimeout(() => {
+      setMessage(null)
+      setMessageType('')
+    }, 5000)
   }
 
   function handleLogout() {
@@ -113,17 +111,17 @@ const App = () => {
     <div>
       <h2>blogs</h2>
       <Notification message={message} messageType={messageType}/>
-      {user 
-      ? <div>
-          {user.username} logged in! 
+      {user
+        ? <div>
+          {user.username} logged in!
           <button onClick={handleLogout} >Logout</button>
           <Togglable toggleType='create new blog' ref={blogFormRef}>
             <BlogForm handleBlogSubmit={handleBlogSubmit} />
           </Togglable>
           <hr/>
           {renderBlogs()}
-        </div> 
-      : <Togglable toggleType='login'>
+        </div>
+        : <Togglable toggleType='login'>
           <LoginForm handleLogin={handleLogin} />
         </Togglable>}
     </div>
